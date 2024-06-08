@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
+#include <iostream>
 
 using namespace sf;
+using namespace std;
 
 //screen size
 int width = 1024;
@@ -14,9 +16,9 @@ struct Line
 {
     float x,y,z;
     float X,Y,W;
-    float scale;
+    float scale,curve;
 
-    Line() {x=y=z=0;}
+    Line() {curve=x=y=z=0;}
 
     //world to screen coords
     void project(int camX, int camY, int camZ){
@@ -40,16 +42,25 @@ void drawQuad(RenderWindow &w, Color c, int x1, int y1, int w1, int x2, int y2, 
 
 int main()
 {
+    //Set render w size and w title + limit framerate at 60 fps
     RenderWindow app(VideoMode(width, height), "Racing!");
     app.setFramerateLimit(60);
 
+    //Background
+    Texture bg;
+    bg.loadFromFile("bg.png");
+    bg.setRepeated(true);
+    Sprite sBackground(bg);
+
     std::vector<Line> lines;
 
+    //this is giving the road shape
     for (int i=0;i<1600;i++)
     {
         Line line;
         line.z =i*segL;
-
+        //curves
+        if (i>300 && i<700) line.curve=0.5;
         lines.push_back(line);
     }
 
@@ -75,10 +86,13 @@ int main()
 
         app.clear();
         int startPos = pos/segL;
+        float x=0, dx=0;
         //////////////////////DRAW ROAD///////////////////////////////////
         for(int n=startPos; n<startPos+300; n++){
             Line &l = lines[n%N];
-            l.project(playerX, 1500, pos);
+            l.project(playerX - x, 1500, pos);
+            x+=dx;
+            dx+=l.curve;
 
             Color grass = (n/3)%2?Color(16,200,16):Color(0,154,0);
             Color rumble = (n/3)%2?Color(255,255,255):Color(0,0,0);
@@ -89,6 +103,8 @@ int main()
             drawQuad(app, grass, 0, p.Y, width, 0, l.Y, width);
             drawQuad(app, rumble,p.X, p.Y, p.W*1.2, l.X, l.Y, l.W*1.2);
             drawQuad(app, road, p.X, p.Y, p.W, l.X, l.Y, l.W);
+            //THIS IS EATING TOO MUCH MEMORY WTF
+            //std::cout << "Line " << n % N << ": X=" << l.X << ", Y=" << l.Y << ", W=" << l.W << std::endl;
 
         }
         //drawQuad(app, Color::Green, 500, 500, 200, 500, 300, 100);
