@@ -54,6 +54,8 @@ int main()
     }
 
     int N = lines.size();
+    int pos = 0;
+    int playerX = 0;
 
     while (app.isOpen()){
         Event e;
@@ -63,11 +65,20 @@ int main()
                 app.close();
         }
 
+        //Forward Backwards
+        if (Keyboard::isKeyPressed(Keyboard::Up)) pos +=200;
+        if (Keyboard::isKeyPressed(Keyboard::Down)) pos -=200;
+        //left right player movment
+        if (Keyboard::isKeyPressed(Keyboard::Right)) playerX+=200;
+        if (Keyboard::isKeyPressed(Keyboard::Left)) playerX-=200;
+
+
         app.clear();
-        /////////////////////////////////////////////////////////
-        for(int n=0;n<300; n++){
+        int startPos = pos/segL;
+        //////////////////////DRAW ROAD///////////////////////////////////
+        for(int n=startPos; n<startPos+300; n++){
             Line &l = lines[n%N];
-            l.project(0, 1500, 0);
+            l.project(playerX, 1500, pos);
 
             Color grass = (n/3)%2?Color(16,200,16):Color(0,154,0);
             Color rumble = (n/3)%2?Color(255,255,255):Color(0,0,0);
